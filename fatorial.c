@@ -1,6 +1,7 @@
 #include "fatorial.h"
 
 #include <stdlib.h>
+#include <stdio.h>
 
 int *precalc;
 
