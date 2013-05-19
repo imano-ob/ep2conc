@@ -6,12 +6,14 @@
 
 const double leftside = 426880 * sqrt(10005);
 
-double iteration(k){
-  const double upsummagicnumber = 43591409;
-  const double upmultmagicnumber = 545140134;
-  const double downmagicnumber = 640320;
-  double up = fatorial( 6 * k ) * (upsummagicnumber + upmultmagicnumber * k);
-  double down = fatorial(3*k) * (pow((double)fatorial(k),3))*(pow(downmagicnumber, 3.0*k));
+long double iteration(k){
+  const long double upsummagicnumber = 43591409;
+  const long double upmultmagicnumber = 545140134;
+  const long double downmagicnumber = 640320;
+  long double up = fatorial( 6 * k ) * (upsummagicnumber + upmultmagicnumber * k);
+  printf("%llf\n", up);
+  long double down = fatorial(3*k) * (powl((double)fatorial(k),3))*(powl(downmagicnumber, 3.0*k));
+  printf("%llf\n", down);
   return up/down;
 }
 
@@ -22,7 +24,7 @@ int main(int argc, char **argv){
   else
     omp_set_num_threads(omp_get_num_procs());
   fatinit(100);
-  printf("%lf\n", iteration(1));
+  printf("%llf\n", iteration(1));
   return 0;
 }
 
