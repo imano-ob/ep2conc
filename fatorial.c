@@ -15,5 +15,6 @@ int fatinit(int n){
 int fatorial(int n){
   if (!precalc[n])
     precalc[n] = n*fatorial(n-1);
+  printf("%lf\n", precalc[n]);
   return precalc[n];
 }
