@@ -15,13 +15,14 @@ mpf_class precalc[SIZE];
 int cur_n[SIZE];
 sem_t lock[SIZE];
 
-void init(){
+void fatseminit(){
   int i;
   for(i = 0; i < SIZE; i++)
     sem_init(&lock[i], 0, 1);
 }
 
 mpf_class fatorial(int n){
+  cout << "oi\n";
   sem_wait(&lock[n%SIZE]);
   if (n == 0){
     precalc[n] = 1;
@@ -32,5 +33,6 @@ mpf_class fatorial(int n){
     cur_n[n%SIZE] = n;
   }
   sem_post(&lock[n%SIZE]);
+  cout << n << " " << n%SIZE <<  "deoiszn\n" ;
   return precalc[n%SIZE];
 }
