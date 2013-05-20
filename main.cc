@@ -17,6 +17,8 @@ mpf_class parciais[100];
 
 sem_t **arrive;
 
+bool debug = false;
+
 using namespace std;
 
 mpf_class iteration(int k){
@@ -63,6 +65,8 @@ int main(int argc, char **argv){
   soma = 0;
   mypi = 0;
   f = argv[1];
+  if (argc > 2 && !strcmp"DEBUG", argv[2])
+    debug = true;
   if (argc > 2 && !strcmp("SEQUENCIAL", argv[2]))
     num_threads = 1;
   else{
@@ -96,9 +100,6 @@ int main(int argc, char **argv){
     rodada_barreira = 0;
     do{
       it = rodada_calc * num_threads + tid;
-      tmpexp = (int)(exp2(rodada_barreira));
-      other = ((tid & tmpexp) != 0 ? (tid - tmpexp): (tid + tmpexp))  % num_threads;
-      rodada_barreira = (rodada_barreira + 1) % num_rodadas;
       if (dummy == false || tid != 0){
 	parciais[it] = iteration(it);
 #pragma omp critical
@@ -106,6 +107,11 @@ int main(int argc, char **argv){
 	  soma = soma + parciais[it];
 	  mypiold = mypi;
 	  mypi = leftside / soma;
+	  if (debug || num_threads == 1){
+	    cout << "Valor de pi parcial: ";
+	    mpf_out_str(stdout, 10, 0, mypi.get_mpf_t());
+	    cout << "\n";
+	  }
 	  diff = mypi - mypiold;
 	}
 #pragma omp critical	
@@ -113,6 +119,12 @@ int main(int argc, char **argv){
 	    done = true;
 	}
       }
+      if(debug)
+	cout << "Thread " << tid << " chegou na barreira\n";
+      
+      tmpexp = (int)(exp2(rodada_barreira));
+      other = ((tid & tmpexp) != 0 ? (tid - tmpexp): (tid + tmpexp))  % num_threads;
+      rodada_barreira = (rodada_barreira + 1) % num_rodadas;
       sem_post(&arrive[tid][rodada[tid]]);
       sem_wait(&arrive[other][rodada[tid]]);
       
@@ -123,6 +135,8 @@ int main(int argc, char **argv){
     for(j = 0; j < num_rodadas; j++)
       sem_post(&arrive[tid][j]);
   }
+  cout << "Número de iterações: " << i <<"\n";
+  cout << "Valor de pi calculado: ";
   mpf_out_str(stdout, 10, 0, mypi.get_mpf_t());
   cout << "\n";
   return 0;
