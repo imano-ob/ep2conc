@@ -43,9 +43,9 @@ mpf_class iteration(int k){
   downfat = fatorial(3*k);
   tmpfat = fatorial(k);
   mpf_pow_ui(tmp, tmpfat.get_mpf_t(), 3);
-  downfatexp = mpf_class(tmpfat);
+  downfatexp = mpf_class(tmp);
   mpf_pow_ui(tmp, downmagicnumber.get_mpf_t(), 3*k);
-  downresto = mpf_class(tmpfat); 
+  downresto = mpf_class(tmp); 
   up = upfat * upresto;
   down = (downfat * downfatexp);
   down = down* downresto;
@@ -56,10 +56,11 @@ mpf_class iteration(int k){
 
 int main(int argc, char **argv){
   int i, j, it, tid, num_rodadas, other, num_threads, rodada_calc = 0, rodada_barreira = 0, p = 0, tmpexp, *rodada;
-  mpf_class f, soma, diff;
+  mpf_class f, soma, mypi, mypiold, diff;
   bool dummy = false, done = false;
   fatseminit();
   soma = 0;
+  mypi = 0;
   f = argv[1];
   if (argc > 2 && !strcmp("SEQUENCIAL", argv[2]))
     num_threads = 1;
@@ -71,7 +72,11 @@ int main(int argc, char **argv){
     }
   }
   num_rodadas = ilogb(num_threads);
-    
+  if(num_rodadas == 0) num_rodadas = 1;
+  if (num_threads > 1 && ilogb(num_threads - 1) == num_rodadas){
+    num_rodadas++;
+  }
+  
   rodada = (int *)malloc(num_threads * sizeof *rodada);
   omp_set_num_threads(num_threads);
   arrive = (sem_t **)malloc(num_threads * sizeof *arrive);
@@ -80,17 +85,13 @@ int main(int argc, char **argv){
     for(j=0; j < num_rodadas; j++)
       sem_init(&arrive[i][j], 0, 0);
   }
-#pragma omp parallel private(diff, tid, it, rodada_calc, rodada_barreira, other, tmpexp,  i), shared(soma, p, num_threads, num_rodadas, rodada)
+#pragma omp parallel private(diff, tid, it, rodada_calc, rodada_barreira, other, tmpexp,  i, j), shared(soma, mypi, mypiold, p, num_threads, num_rodadas, rodada, parciais)
   {
-    soma = 0;
+    i = 0;
     rodada_calc = 0;
 #pragma omp atomic capture
     {tid = p; p++;}
     rodada[tid] = 0;
-    if(num_rodadas == 0) num_rodadas = 1;
-    if (num_threads > 1 && ilogb(num_threads - 1) == num_rodadas){
-      num_rodadas++;
-     }
     rodada_barreira = 0;
     do{
       it = rodada_calc * num_threads + tid;
@@ -99,18 +100,30 @@ int main(int argc, char **argv){
       rodada_barreira = (rodada_barreira + 1) % num_rodadas;
       if (dummy == false || tid != 0){
 	parciais[it] = iteration(it);
-	diff = leftside / parciais[it];
+#pragma omp critical
+	{ 
+	  soma = soma + parciais[it];
+	  mypiold = mypi;
+	  mypi = leftside / soma;
+	  diff = mypi - mypiold;
+	}
+#pragma omp critical	
 	if(cmp(diff, f) <=0 ){
-	  done = true;
+	    done = true;
 	}
       }
       sem_post(&arrive[tid][rodada[tid]]);
       sem_wait(&arrive[other][rodada[tid]]);
-           
+      
       rodada_calc++;
       rodada[tid] += 1;
+      i++;
     }while(!(done));
+    for(j = 0; j < num_rodadas; j++)
+      sem_post(&arrive[tid][j]);
   }
+  mpf_out_str(stdout, 10, 0, mypi.get_mpf_t());
+  cout << "\n";
   return 0;
 }
 
