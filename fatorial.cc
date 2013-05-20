@@ -5,6 +5,7 @@
 #include <gmp.h>
 #include <gmpxx.h>
 #include <iostream>
+#include <semaphore.h>
 
 #define SIZE 1000
 
@@ -12,9 +13,16 @@ using namespace std;
 
 mpf_class precalc[SIZE];
 int cur_n[SIZE];
+sem_t lock[SIZE];
 
+void init(){
+  int i;
+  for(i = 0; i < SIZE; i++)
+    sem_init(&lock[i], 0, 1);
+}
 
 mpf_class fatorial(int n){
+  sem_wait(&lock[n%SIZE]);
   if (n == 0){
     precalc[n] = 1;
     cur_n[n] = n;
@@ -23,5 +31,6 @@ mpf_class fatorial(int n){
     precalc[n%SIZE] =  fatorial(n-1) * n;
     cur_n[n%SIZE] = n;
   }
+  sem_post(&lock[n%SIZE]);
   return precalc[n%SIZE];
 }

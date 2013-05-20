@@ -1,9 +1,11 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <omp.h>
 #include <math.h>
 #include <gmp.h>
 #include <gmpxx.h>
 #include <iostream>
+#include <semaphore.h>
 
 #include "fatorial.h"
 
@@ -22,7 +24,11 @@ mpf_class up;
 mpf_class down;
 mpf_class returning;
 
-  
+mpf_class pi_parcial;
+mpf_class parciais[100];
+
+sem_t *arrive;
+
 using namespace std;
 
 mpf_class iteration(int k){
@@ -43,22 +49,43 @@ mpf_class iteration(int k){
 
 
 int main(int argc, char **argv){
-  int i;
-  mpf_class mynotpi= 0;
-  mpf_init(tmp);
- 
-  mpf_set_default_prec(128);
-  if (/*sequencial*/1)
-    omp_set_num_threads(1);
+  int i, it, tid, num_rodadas, other, num_threads, rodada_calc = 0, rodada_barreira = 0;
+  mpf_class f, soma, soma_old, diff;
+  soma = 0;
+  f = argv[1];
+  if (argc > 2 && !strcmp("SEQUENCIAL", argv[2]))
+    num_threads = 1;
   else
-    omp_set_num_threads(omp_get_num_procs());
-  //#pragma omp parallel private()
-  for(i = 0; i < 15000; i++){
-    mynotpi = mynotpi + iteration(i);
+    num_threads = omp_get_num_procs();
+  omp_set_num_threads(num_threads);
+  arrive = (sem_t *)malloc(num_threads * sizeof *arrive);
+  for (i = 0; i < num_threads; i++)
+    sem_init(&arrive[i], 0, 0);
+#pragma omp parallel private(upfat, upresto, downfat, downfatexp, downresto, up, down, returning, tid, it, rodada_calc, rodada_barreira, other, tmp)
+  {
+    mpf_init(tmp);
+    tid = omp_get_thread_num();
+    num_rodadas = ilogb(num_threads);
+    if (num_threads > 1 && ilogb(num_threads - 1) == num_rodadas)
+      num_rodadas++;
+    do{
+      it = rodada_calc * num_threads + tid;
+      other = (int)(exp2(rodada_barreira) + tid) % num_threads;
+      rodada_barreira = (rodada_barreira + 1) % num_rodadas;
+      parciais[it] = iteration(it);
+      sem_post(&arrive[tid]);
+      sem_wait(&arrive[other]);
+      rodada_calc++;
+#pragma omp critical
+      {
+	soma_old = soma;
+	soma = soma + parciais[it];
+	diff = leftside / parciais[it];
+      }
+      
+    }while(cmp(diff, f) > 1);
   }
-  mynotpi =  leftside/mynotpi;
-  //std::cout << mynotpi << "\n";
-  mpf_out_str(stdout, 10, 0, mynotpi.get_mpf_t());
+  //mpf_out_str(stdout, 10, 0, mynotpi.get_mpf_t());
   return 0;
 }
 
