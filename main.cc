@@ -36,13 +36,14 @@ mpf_class iteration(int k){
 int main(int argc, char **argv){
   int i;
   mpf_class mynotpi= 0;
+  mpf_set_default_prec(2048);
   if (/*sequencial*/1)
     omp_set_num_threads(1);
   else
     omp_set_num_threads(omp_get_num_procs());
   //  fatinit(100);
   //#pragma omp parallel private()
-  for(i = 0; i < 1; i++){
+  for(i = 0; i < 100; i++){
     mynotpi = mynotpi + iteration(i);
   }
   mynotpi =  leftside/mynotpi;

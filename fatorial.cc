@@ -6,18 +6,20 @@
 #include <gmpxx.h>
 #include <iostream>
 
+#define SIZE 10000
+
 using namespace std;
 
-mpf_class precalc[100];
+mpf_class precalc[SIZE];
+int cur_n[SIZE];
 
 
 mpf_class fatorial(int n){
-  if (!cmp(precalc[n],0)){
-    if (n==0)
-     precalc[n] = 1;
-    else{
-      precalc[n] =  fatorial(n-1) * n;
-    }
+  if (n == 0)
+    precalc[n] = 1;
+  else if (cur_n[n%SIZE] != n){
+    precalc[n] =  fatorial(n-1) * n;
+    cur_n[n] = n;
   }
   return precalc[n];
 }
