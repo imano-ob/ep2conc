@@ -59,6 +59,7 @@ int main(int argc, char **argv){
   mpf_class f, soma, mypi, mypiold, diff;
   bool dummy = false, done = false;
   fatseminit();
+  mpf_set_default_prec(1024);
   soma = 0;
   mypi = 0;
   f = argv[1];
