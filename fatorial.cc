@@ -4,6 +4,9 @@
 #include <stdio.h>
 #include <gmp.h>
 #include <gmpxx.h>
+#include <iostream>
+
+using namespace std;
 
 mpf_class precalc[100];
 
@@ -19,12 +22,15 @@ mpf_class precalc[100];
 
 
 mpf_class fatorial(int n){
-  printf("int -> %d\n", n);
+  //printf("int -> %d\n", n);
   if (!cmp(precalc[n],0)){
-    if (n==1)
+    //cout << "POOP\n";
+    if (n==0)
      precalc[n] = 1;
-    else
-      precalc[n] =  precalc[n-1] * n;
+    else{
+      precalc[n] =  fatorial(n-1) * n;
+    }
   }
+  cout << precalc[n] << " precalc\n";
   return precalc[n];
 }
