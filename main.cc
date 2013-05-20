@@ -56,7 +56,7 @@ mpf_class iteration(int k){
 
 int main(int argc, char **argv){
   int i, j, it, tid, num_rodadas, other, num_threads, rodada_calc = 0, rodada_barreira = 0, p = 0, tmpexp, *rodada;
-  mpf_class f, soma, soma_old, diff;
+  mpf_class f, soma, diff;
   bool dummy = false, done = false;
   fatseminit();
   soma = 0;
@@ -80,9 +80,9 @@ int main(int argc, char **argv){
     for(j=0; j < num_rodadas; j++)
       sem_init(&arrive[i][j], 0, 0);
   }
-  #pragma omp parallel private(diff, tid, it, rodada_calc, rodada_barreira, other, tmpexp,  i), shared(p, num_threads, num_rodadas, rodada)
+#pragma omp parallel private(diff, tid, it, rodada_calc, rodada_barreira, other, tmpexp,  i), shared(soma, p, num_threads, num_rodadas, rodada)
   {
-    i = 0;
+    soma = 0;
     rodada_calc = 0;
 #pragma omp atomic capture
     {tid = p; p++;}
@@ -108,9 +108,8 @@ int main(int argc, char **argv){
       sem_wait(&arrive[other][rodada[tid]]);
            
       rodada_calc++;
-      i++;
-      rodada[tid] = rodada_barreira;
-    }while(!(done && i > 5));
+      rodada[tid] += 1;
+    }while(!(done));
   }
   return 0;
 }
