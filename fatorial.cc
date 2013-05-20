@@ -22,7 +22,7 @@ void fatseminit(){
 }
 
 mpf_class fatorial(int n){
-  cout << "oi\n";
+  mpf_class result;
   sem_wait(&lock[n%SIZE]);
   if (n == 0){
     precalc[n] = 1;
@@ -32,7 +32,7 @@ mpf_class fatorial(int n){
     precalc[n%SIZE] =  fatorial(n-1) * n;
     cur_n[n%SIZE] = n;
   }
+  result = precalc[n%SIZE];
   sem_post(&lock[n%SIZE]);
-  cout << n << " " << n%SIZE << "  "<< precalc[n%SIZE] << "  deoiszn\n" ;
-  return precalc[n%SIZE];
+  return result;
 }
