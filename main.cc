@@ -65,7 +65,7 @@ int main(int argc, char **argv){
   soma = 0;
   mypi = 0;
   f = argv[1];
-  if (argc > 2 && !strcmp"DEBUG", argv[2])
+  if (argc > 2 && !strcmp("DEBUG", argv[2]))
     debug = true;
   if (argc > 2 && !strcmp("SEQUENCIAL", argv[2]))
     num_threads = 1;
