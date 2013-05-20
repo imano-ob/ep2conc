@@ -12,17 +12,6 @@
 mpf_class leftside = 426880 * sqrt(10005);
 mpf_t tmp;
 
-mpf_class upsummagicnumber = 13591409;
-mpf_class upmultmagicnumber = 545140134;
-mpf_class downmagicnumber = -640320;
-mpf_class upfat;
-mpf_class upresto;
-mpf_class downfat;
-mpf_class downfatexp;
-mpf_class downresto; 
-mpf_class up;
-mpf_class down;
-mpf_class returning;
 
 mpf_class pi_parcial;
 mpf_class parciais[100];
@@ -32,11 +21,29 @@ sem_t *arrive;
 using namespace std;
 
 mpf_class iteration(int k){
+
+  mpf_class upsummagicnumber = 13591409;
+  mpf_class upmultmagicnumber = 545140134;
+  mpf_class downmagicnumber = -640320;
+  mpf_class upfat;
+  mpf_class upresto;
+  mpf_class downfat;
+  mpf_class downfatexp;
+  mpf_class downresto; 
+  mpf_class up;
+  mpf_class down;
+  mpf_class returning;
+  mpf_class tmpfat;
+  cout << "a";
   upfat = (fatorial( 6 * k ));
   upresto = upmultmagicnumber*k;
   upresto = upresto + upsummagicnumber;
+  cout << "b";
   downfat = fatorial(3*k);
-  mpf_pow_ui(tmp, fatorial(k).get_mpf_t(), 3);
+  tmpfat = fatorial(k);
+  cout << tmpfat << " tmpfat\n";
+  mpf_pow_ui(tmp, tmpfat.get_mpf_t(), 3);
+  cout << "c";
   downfatexp = mpf_class(tmp);
   mpf_pow_ui(tmp, downmagicnumber.get_mpf_t(), 3*k);
   downresto = mpf_class(tmp); 
@@ -62,7 +69,7 @@ int main(int argc, char **argv){
   arrive = (sem_t *)malloc(num_threads * sizeof *arrive);
   for (i = 0; i < num_threads; i++)
     sem_init(&arrive[i], 0, 0);
-#pragma omp parallel private(upfat, upresto, downfat, downfatexp, downresto, up, down, returning, tid, it, rodada_calc, rodada_barreira, other, tmp)
+#pragma omp parallel private(tid, it, rodada_calc, rodada_barreira, other, tmp)
   {
     mpf_init(tmp);
     tid = omp_get_thread_num();

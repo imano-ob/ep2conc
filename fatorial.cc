@@ -33,6 +33,6 @@ mpf_class fatorial(int n){
     cur_n[n%SIZE] = n;
   }
   sem_post(&lock[n%SIZE]);
-  cout << n << " " << n%SIZE <<  "deoiszn\n" ;
+  cout << n << " " << n%SIZE << "  "<< precalc[n%SIZE] << "  deoiszn\n" ;
   return precalc[n%SIZE];
 }
